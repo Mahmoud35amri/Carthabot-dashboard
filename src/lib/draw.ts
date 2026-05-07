@@ -90,6 +90,27 @@ export function drawTour(input: DrawInput): DrawTour {
   const applyClubRule = tourNumber <= clubSeparationTours;
   const rng = makeRng(`${seed}::tour${tourNumber}`);
 
+  // Endgame case: when the remaining field fits inside a single group,
+  // run it as ONE decisive match (size 1..groupSize). No padding byes.
+  // Examples: AT-S (max 4) with 3 robots left → one match of 3, not 3 byes.
+  if (robots.length <= groupSize) {
+    const ids = shuffle(
+      robots.map((r) => r.id),
+      rng
+    );
+    return {
+      tourNumber,
+      groupSize,
+      groups: [
+        {
+          ordinal: 0,
+          robotIds: ids,
+          isBye: ids.length === 1
+        }
+      ]
+    };
+  }
+
   // 1. Bye count = leftover robots after packing as many full groups as possible.
   //    Each bye is a single-robot auto-advance group appended at the end.
   const byeCount = robots.length % groupSize;

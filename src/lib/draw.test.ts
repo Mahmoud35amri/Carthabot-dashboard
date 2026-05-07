@@ -150,6 +150,62 @@ describe("drawTour", () => {
     expect(JSON.stringify(a)).not.toBe(JSON.stringify(b));
   });
 
+  it("endgame: 3 robots / groupSize 4 → single match of 3 (no byes)", () => {
+    const robots = mkRobots({ A: 1, B: 1, C: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 4,
+      tourNumber: 3,
+      clubSeparationTours: 2,
+      seed: "endgame-3-of-4"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(3);
+  });
+
+  it("endgame: 2 robots / groupSize 4 → single 1v1 final", () => {
+    const robots = mkRobots({ A: 1, B: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 4,
+      tourNumber: 4,
+      clubSeparationTours: 2,
+      seed: "endgame-2-of-4"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(2);
+  });
+
+  it("endgame: 4 robots / groupSize 4 → single decisive match of 4", () => {
+    const robots = mkRobots({ A: 1, B: 1, C: 1, D: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 4,
+      tourNumber: 3,
+      clubSeparationTours: 2,
+      seed: "endgame-4-of-4"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(4);
+  });
+
+  it("endgame: 2 robots / 1v1 challenge → single match (the final)", () => {
+    const robots = mkRobots({ A: 1, B: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 2,
+      tourNumber: 4,
+      clubSeparationTours: 2,
+      seed: "endgame-2-of-2"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(2);
+  });
+
   it("partial-exception: club A has 5 of 12 robots in 4-per-round groups", () => {
     // 12 robots / 4-per-round = 3 groups. Club A has 5 — > groupCount (3),
     // so two A robots SHOULD share a group (exception path).
