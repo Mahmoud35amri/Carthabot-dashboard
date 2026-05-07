@@ -155,6 +155,32 @@ export default function MatchesClient({
     }
   }
 
+  async function resetTournament() {
+    if (
+      !confirm(
+        "Reset the entire tournament for this challenge?\n\nAll rounds and matches will be deleted. Registered robots are kept. You'll be sent back to the Draw screen to re-roll."
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setBusy("reset");
+    try {
+      const res = await fetch(`/api/admin/${challenge}/reset`, {
+        method: "POST"
+      });
+      const j = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(j.error ?? "reset failed");
+      router.push(`/admin/${challenge}/draw`);
+      router.refresh();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "reset failed";
+      setError(message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (tournament.status === "setup") {
     return (
       <div className="glass p-6 text-white/70">
@@ -192,6 +218,21 @@ export default function MatchesClient({
           <p className="mt-1 text-sm text-white/70">{champion.club.name}</p>
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <span className="font-display text-xs uppercase tracking-widest text-white/40">
+          Tournament status:{" "}
+          <span className="text-white/70">{tournament.status}</span>
+        </span>
+        <NeonButton
+          variant="magenta"
+          onClick={resetTournament}
+          loading={busy === "reset"}
+          className="border-red-400/60 text-red-300 hover:bg-red-400/10 shadow-[0_0_20px_rgba(248,113,113,0.25)]"
+        >
+          ⟲ Reset · Redo Draw
+        </NeonButton>
+      </div>
 
       {error && (
         <div className="glass border-red-400/50 p-3 text-sm text-red-400">

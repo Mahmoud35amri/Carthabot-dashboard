@@ -30,7 +30,7 @@ export default function DrawClient({
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"draw" | "confirm" | null>(null);
+  const [busy, setBusy] = useState<"draw" | "confirm" | "reset" | null>(null);
 
   const tour1 = rounds.find((r) => r.tour_number === 1);
   const tour1Matches = useMemo(
@@ -85,6 +85,31 @@ export default function DrawClient({
     }
   }
 
+  async function reset() {
+    if (
+      !window.confirm(
+        "Reset the entire tournament?\n\nAll rounds and matches will be deleted. Registered robots are kept. You'll then be able to re-roll the draw."
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setBusy("reset");
+    try {
+      const res = await fetch(`/api/admin/${challenge}/reset`, {
+        method: "POST"
+      });
+      const j = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(j.error ?? "reset failed");
+      router.refresh();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "reset failed";
+      setError(message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   const canRedraw = tournament.status === "setup" || tournament.status === "drawn";
   const canConfirm = tournament.status === "drawn";
   const lockedFromInProgress =
@@ -133,9 +158,19 @@ export default function DrawClient({
               </NeonButton>
             )}
             {lockedFromInProgress && (
-              <p className="text-xs text-white/50">
-                Tournament in progress — draw locked.
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-xs text-white/50">
+                  Tournament locked.
+                </p>
+                <NeonButton
+                  variant="magenta"
+                  onClick={reset}
+                  loading={busy === "reset"}
+                  className="border-red-400/60 text-red-300 hover:bg-red-400/10 shadow-[0_0_20px_rgba(248,113,113,0.25)]"
+                >
+                  ⟲ Reset · Redo Draw
+                </NeonButton>
+              </div>
             )}
           </div>
         </div>

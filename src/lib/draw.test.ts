@@ -192,6 +192,48 @@ describe("drawTour", () => {
     expect(tour.groups[0].robotIds.length).toBe(4);
   });
 
+  it("endgame AT-J: 3 robots / groupSize 3 → single decisive match of 3", () => {
+    const robots = mkRobots({ A: 1, B: 1, C: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 3,
+      tourNumber: 3,
+      clubSeparationTours: 2,
+      seed: "endgame-3-of-3"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(3);
+  });
+
+  it("endgame AT-J: 2 robots / groupSize 3 → 1v1 final (no bye)", () => {
+    const robots = mkRobots({ A: 1, B: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 3,
+      tourNumber: 4,
+      clubSeparationTours: 2,
+      seed: "endgame-2-of-3"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(false);
+    expect(tour.groups[0].robotIds.length).toBe(2);
+  });
+
+  it("endgame: 1 robot remaining → single bye group (champion case)", () => {
+    const robots = mkRobots({ A: 1 });
+    const tour = drawTour({
+      robots,
+      groupSize: 4,
+      tourNumber: 5,
+      clubSeparationTours: 2,
+      seed: "endgame-champion"
+    });
+    expect(tour.groups.length).toBe(1);
+    expect(tour.groups[0].isBye).toBe(true);
+    expect(tour.groups[0].robotIds.length).toBe(1);
+  });
+
   it("endgame: 2 robots / 1v1 challenge → single match (the final)", () => {
     const robots = mkRobots({ A: 1, B: 1 });
     const tour = drawTour({

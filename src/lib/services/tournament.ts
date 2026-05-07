@@ -104,6 +104,19 @@ export async function generateInitialDraw(
   return { seed, tour: tour1 };
 }
 
+export async function resetTournament(
+  db: SupabaseClient,
+  challenge: Challenge
+) {
+  const t = await getTournament(db, challenge);
+  await deleteRoundsByTournament(db, t.id);
+  return updateTournamentStatus(db, challenge, "setup", {
+    draw_seed: null,
+    drawn_at: null,
+    finished_at: null
+  });
+}
+
 export async function confirmDraw(db: SupabaseClient, challenge: Challenge) {
   const t = await getTournament(db, challenge);
   if (t.status !== "drawn") {
